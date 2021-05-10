@@ -267,6 +267,18 @@
                 optionsHtml += '<option value="1">1</option>';
                 $('#installments_number').html(optionsHtml);
             }
+        }).focusout(function(){
+
+            var cv = $(this).val().length;
+            if(cv > 5){
+                getPos();
+            }
+            else
+            {
+                var optionsHtml = '<option value="" selected disabled hidden>Choose...</option>';
+                optionsHtml += '<option value="1">1</option>';
+                $('#installments_number').html(optionsHtml);
+            }
         });
 
         // Commissions modal show event
