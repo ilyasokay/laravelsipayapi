@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Sipay;
+use App\Models\Bill;
+use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -13,12 +18,15 @@ class HomeController extends Controller
         $getToken = Sipay::getToken();
         $is_3d = is_null($getToken) ? 0 : $getToken->is_3d;
 
-        return view('home.index')
+        $products = Product::all();
+
+        return view('home')
+            ->with('products', $products)
             ->with('is_3d', $is_3d);
     }
 
     // Installment
-    public function installment(Request $request)
+    public function getPos(Request $request)
     {
         $getToken = Sipay::getToken();
 
@@ -44,10 +52,29 @@ class HomeController extends Controller
         $inputs['is_2d'] = $getToken->is_3d == 0 ? 1 : 0;
         */
 
-        $getInstallment = Sipay::getInstallment($getToken->token, $inputs);
+        $getPos = Sipay::getPos($getToken->token, $inputs);
 
         return response()->json([
-            'data' => $getInstallment != null ? $getInstallment : []
+            'data' => $getPos != null ? $getPos : []
+        ]);
+    }
+
+    public function installments(Request $request)
+    {
+        $getToken = Sipay::getToken();
+
+        if(is_null($getToken))
+        {
+            return response()->json([
+                "status_code" => 401,
+                'message' => 'Unauthorized'
+            ]);
+        }
+
+        $getInstallments = Sipay::getInstallments($getToken->token);
+
+        return response()->json([
+            'data' => $getInstallments != null ? $getInstallments : []
         ]);
     }
 
@@ -122,13 +149,14 @@ class HomeController extends Controller
     {
         $invoice_id = rand(10000000001, 99999999999);
         $merchant_key = config('payment.sipay.api_merchant_key');
-        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,'b46a67571aa1e7ef5641dc3fa6f1712a');
+        $app_secret = config('payment.sipay.app_secret');
+        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
 
-        $items = [["name" => "Item3","price" => 5.00,"qnantity" => 1,"description" =>"item3 description"]];
+        $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
 
         $inputs = [
             'cc_holder_name' => 'John Dao',
-            'cc_no' => 4508034508034509,
+            'cc_no' => 5406675406675403,
             'expiry_month' => 12,
             'expiry_year' => 2026,
             'cvv' => '000',
@@ -158,11 +186,16 @@ class HomeController extends Controller
 
         $invoice_id = rand(10000000001, 99999999999);
         $merchant_key = config('payment.sipay.api_merchant_key');
-        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,'b46a67571aa1e7ef5641dc3fa6f1712a');
+        $app_secret = config('payment.sipay.app_secret');
+
+        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+
+        $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
+
 
         $inputs = [
             'cc_holder_name' => 'John Dao',
-            'cc_no' => 4508034508034509,
+            'cc_no' => 5406675406675403,
             'expiry_month' => 12,
             'expiry_year' => 2026,
             'cvv' => '000',
@@ -172,36 +205,52 @@ class HomeController extends Controller
             'invoice_description' => 'INVOICE TEST DESCRIPTION',
             'total' => 5.00,
             'merchant_key' => $merchant_key,
-            'items' => [["name" => "Item3","price" => 5.00,"qnantity" => 1,"description" =>"item3 description"]],
+            'items' => $items,
             'name' => 'John',
             'surname' => 'Dao',
             'hash_key' => $hash,
         ];
 
-
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
-
-        echo $paySmart2D->object();
+        echo $paySmart2D;
     }
 
     // Return Url - Success
     public function success(Request $request)
     {
-        // DB operation
+        if($request->input('sipay_status') == 1){
+            Cookie::queue(Cookie::forget('shopping_cart'));
+
+            Log::debug('PAYMENT_3D_SUCCESS', [$request->all()]);
+
+            $invoice = Bill::query()->find($request->input('invoice_id'));
+
+            if($invoice){
+                $invoice->order->update([
+                    'status' => Order::STATUS_PAYMENT_SUCCESS,
+                    'payment_order_no' => $request->input('order_no')
+                ]);
+            }
+
+            return redirect()
+                ->route('index')
+                ->with('success_message', 'Payment Success..');
+        }
 
         return redirect()
-            ->route('index')
-            ->with('success_message', 'Success..');
+            ->route('payment.index')
+            ->with('error_message', 'Payment Error..');
+
     }
 
     // Cancel Url - Fail
     public function fail(Request $request)
     {
-        // DB operation
+        Log::debug('PAYMENT_3D_ERROR', [$request->all()]);
 
         return redirect()
-            ->route('index')
-            ->with('error_message', 'Error..');
+            ->route('payment.index')
+            ->with('error_message', 'Payment Error..');
     }
 
     // Generate Hash Code
