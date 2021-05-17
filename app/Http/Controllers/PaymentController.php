@@ -38,7 +38,7 @@ class PaymentController extends Controller
     // Payment
     public function store(Request $request)
     {
-        dd($request->all());
+        //dd($request->all());
         $items = [];
 
         // Get Items
