@@ -195,6 +195,7 @@ class Sipay
         return null;
     }
 
+    // Create Save Card
     public static function saveCard($token, $inputs)
     {
         $request = Http::withHeaders([
@@ -207,22 +208,49 @@ class Sipay
             $object = $request->object();
             if($object->status_code == 100){
 
-                Log::debug('SAVE_CARD_SUCCESS', [$object]);
+                Log::debug('SAVE_CARD_CREATE_SUCCESS', [$object]);
 
                 return $object;
             }
-            Log::debug('SAVE_CARD_ERROR', [$object]);
+            Log::debug('SAVE_CARD_CREATE_ERROR', [$object]);
 
             return $object;
         }
 
-        Log::debug('SAVE_CARD_ERROR', [$request->body()]);
+        Log::debug('SAVE_CARD_CREATE_ERROR', [$request->body()]);
 
         return null;
     }
 
-    // Generate Savecard Hash Key
-    public static function generateSaveCardHashKey(
+    // Edit Save Card
+    public static function editCard($token, $inputs)
+    {
+        $request = Http::withHeaders([
+            'Authorization' => 'Bearer '. $token,
+            'Accept' => 'application/json'
+        ])
+            ->post(config('payment.sipay.api_url') . "/api/editCard",$inputs);
+
+        if($request->status() == 200){
+            $object = $request->object();
+            if($object->status_code == 100){
+
+                Log::debug('SAVE_CARD_EDIT_SUCCESS', [$object]);
+
+                return $object;
+            }
+            Log::debug('SAVE_CARD_EDIT_ERROR', [$object]);
+
+            return $object;
+        }
+
+        Log::debug('SAVE_CARD_EDIT_ERROR', [$request->body()]);
+
+        return null;
+    }
+
+    // Generate Create Savecard Hash Key
+    public static function generateSaveCardCreateHashKey(
         $merchant_key,
         $customer_number,
         $card_number,
@@ -244,7 +272,25 @@ class Sipay
 
     }
 
+    // Generate Edit or Delete Savecard Hash Key
+    public static function generateSaveCardEditOrDeleteHashKey(
+        $merchant_key,
+        $customer_number,
+        $card_token,
+        $app_secret
+    ){
+        $data = $merchant_key.'|'.$customer_number.'|'.$card_token;
+        $iv = substr(sha1(mt_rand()), 0, 16);
+        $password = sha1($app_secret);
+        $salt = substr(sha1(mt_rand()), 0, 4);
+        $saltWithPassword = hash('sha256', $password . $salt);
+        $encrypted = openssl_encrypt("$data", 'aes-256-cbc', "$saltWithPassword", null, $iv);
 
+        $msg_encrypted_bundle = "$iv:$salt:$encrypted";
+        $msg_encrypted_bundle = str_replace('/', '__', $msg_encrypted_bundle);
+
+        return $msg_encrypted_bundle;
+    }
 
     // Hash Key
     public static function generateHashKey(

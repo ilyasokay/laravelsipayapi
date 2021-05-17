@@ -268,4 +268,12 @@ class HomeController extends Controller
 
         echo $token->token;
     }
+
+
+    // Log Create
+    public function createLog($data){
+        Log::debug('TEST_LOG', [$data]);
+
+        echo "Log Created";
+    }
 }

@@ -94,7 +94,7 @@ class CardController extends Controller
 
         $getToken = Sipay::getToken();
 
-        $hashKey = Sipay::generateSaveCardHashKey(
+        $hashKey = Sipay::generateSaveCardCreateHashKey(
             config('payment.sipay.api_merchant_key'),
             $user->customer_number,
             5406675406675403,

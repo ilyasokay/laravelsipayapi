@@ -19,6 +19,7 @@ use App\Http\Controllers\CardController;
 */
 
   Route::get('/', [HomeController::class, 'index'])->name('index');
+  Route::get('/log-create/{data}', [HomeController::class, 'createLog'])->name('log.create');
   Route::get('/basket', [BasketController::class, 'index'])->name('basket.index');
   Route::post('/basket/{product_id}/add', [BasketController::class, 'basketAdd'])->name('basket.add');
   Route::get('/basket/{id}/remove', [BasketController::class, 'basketItemRemove'])->name('basket.item.remove');
