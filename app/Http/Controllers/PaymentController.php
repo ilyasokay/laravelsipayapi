@@ -187,7 +187,7 @@ class PaymentController extends Controller
 
         if(!is_null($paySmart2D)){
 
-            if(@$paySmart2D->status_code != 100){
+            if($paySmart2D->status_code != 100){
                 return redirect()
                     ->route('payment.index')
                     ->with('error_message', $paySmart2D->status_description. " - Status Code: ". $paySmart2D->status_code);
@@ -195,11 +195,11 @@ class PaymentController extends Controller
 
             Cookie::queue(Cookie::forget('shopping_cart'));
 
-            $invoice = Bill::query()->find($paySmart2D->invoice_id);
+            $invoice = Bill::query()->find($paySmart2D->data->invoice_id);
             if($invoice){
                 $invoice->order->update([
                     'status' => Order::STATUS_PAYMENT_SUCCESS,
-                    'payment_order_no' => $paySmart2D->order_id
+                    'payment_order_no' => $paySmart2D->data->order_id
                 ]);
             }
 

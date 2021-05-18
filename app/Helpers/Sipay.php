@@ -109,10 +109,10 @@ class Sipay
         ])
         ->post(config('payment.sipay.api_url') . "/api/paySmart2D",$inputs)->object();
 
-        if(@$request->status_code == 100)
+        if($request->status_code == 100)
         {
             Log::debug('PAYMENT_2D_SUCCESS', [$request->data]);
-            return $request->data;
+            return $request;
         }else{
             return $request;
             Log::debug('PAYMENT_2D_ERROR', [$request]);
