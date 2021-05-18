@@ -112,6 +112,14 @@
                                                 </div>
                                             @endif
 
+                                            @if ($message = Session::get('warning_message'))
+                                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                                    <strong>{{ $message }}</strong>                                               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            @endif
+
                                             <br>
                                             <h4 id="cardNumberHelpBlock" class="form-text text-muted font-weight-bold">
                                                 <a onclick="Javascript:$('#form_credit_card').fadeToggle();" data-toggle="collapse" href="#collapseCards" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -126,6 +134,7 @@
                                                     <form id="form_save_card" action="{{ route('payment.store') }}" method="post">
                                                         @csrf
                                                         <div class="inputs">
+                                                            <input type="hidden" name="payment_save_card" value="1">
                                                             <input type="hidden" name="total" value="{{ number_format($total, 2) }}">
                                                             <input type="hidden" name="card_token">
                                                             <input type="hidden" name="customer_number" value="{{ $user->customer_number ?? null }}">
@@ -229,7 +238,18 @@
 
                                                     </div>
                                                 </div>
-
+                                                <div class="row mb-1">
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="save_my_card" value="1" id="invalidCheck3">
+                                                                <label class="form-check-label" for="invalidCheck3">
+                                                                    Save my card
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <button type="submit" class="subscribe btn btn-primary btn-block rounded-pill shadow-sm"> Confirm  </button>
                                             </form>
                                         </div>
@@ -315,6 +335,37 @@
 </div>
 
 
+<div class="modal fade" id="editCardModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-md modal-dialog modal-dialog-top modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commissionsModalLabel">Edit Card</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="message">
+
+                </div>
+                <form id="form_editcard" data-base-url="{{ url("/") }}" method="post" onsubmit="return false;">
+                    @csrf
+                    <div class="form-group">
+                        <label for="card_holder_name">Card Holder Name</label>
+                        <input type="text" class="form-control" id="card_holder_name" disabled name="card_holder_name" aria-describedby="emailHelp">
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="form_editcard" class="btn btn-success">Update</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @endsection
 
@@ -397,14 +448,29 @@
         // Get cards
         function getCards()
         {
+            $("#cardNumberHelpBlock").hide();
             var url = $('#save_card_url').val();
 
             $.getJSON(url, function(xhr){
                 if(xhr.data){
                     var cardListHtml = '';
+                    if(xhr.data.length > 0){
+                        $("#cardNumberHelpBlock").show();
+                    }
                     xhr.data.forEach(function(item){
                         console.log(item);
 
+                        cardListHtml += '<div data-card-token="'+item.card_token+'" class="list-group-item list-group-item-action card-list-item">' +
+                            '<div class="d-flex w-100 justify-content-between">' +
+                            '<h5 class="mb-1">'+item.card_number+'</h5>' +
+                            '</div>' +
+                            '<p class="mb-1">'+item.customer_name+'</p>' +
+                            '<small class="">'+item.bank_code+'</small>' +
+                            '<button class="btn btn-danger btn-sm float-right ml-1 btn-delete-card" data-base-url="{{ url('/') }}" data-card-token="'+item.card_token+'" data-csrf-token="{{ csrf_token() }}">Delete</button>' +
+                            '<button class="btn btn-success btn-sm float-right btn-edit-card" data-card-token="'+item.card_token+'" data-card-holder-name="'+item.customer_name+'">Edit</button>' +
+                            '</div>';
+
+/*
                         cardListHtml += '<a href="#" data-card-token="'+item.card_token+'" class="list-group-item list-group-item-action card-list-item">' +
                            '<div class="d-flex w-100 justify-content-between">' +
                                 '<h5 class="mb-1">'+item.binlist.bank.name+'</h5>' +
@@ -412,7 +478,7 @@
                             '<p class="mb-1">'+item.binlist.scheme+'</p>' +
                             '<small class="text-muted">'+item.bin+'</small>' +
                         '</a>';
-
+*/
                     });
 
                     $('.card-list').html(cardListHtml);
@@ -430,13 +496,23 @@
                 event.preventDefault();
                 $('input[name=card_token]').val($(this).data('card-token'));
 
+                if($(".card-list-item").length > 1){
+                    $('.card-list-item').not($(this)).removeClass('active');
+                }
+
+                $(this).toggleClass('active');
+
+                if(! $(this).hasClass('active')){
+                    $('input[name=card_token]').val('');
+                }
+
                 console.log($(this).data('card-token'));
             });
 
 
             // Credit card keyup function
             $('input[name=credit_card]').keyup(function(event){
-                var cv = $(this).val().length;
+                var cv = $(thisPaymen).val().length;
                 if(cv > 5){
                     if(cv < 7){
                         getPos();
@@ -475,6 +551,73 @@
 
                     });
             */
+
+
+            $('body').on('click', '.btn-edit-card', function(){
+                var card_holder_name = $(this).data('card-holder-name');
+                var card_token = $(this).data('card-token');
+
+                $("#form_editcard #card_holder_name").val(card_holder_name);
+
+                $('#editCardModal form input[name=card-token]').remove();
+                $('#editCardModal form').append('<input id="card-token" name="card-token" type="hidden" value="'+card_token+'" /> ');
+
+                $('#editCardModal').modal('show');
+            });
+
+            $('body').on('click', '.btn-delete-card', function(){
+                var thiss = $(this);
+                var card_token = $(this).data('card-token');
+                var csrf_token = $(this).data('csrf-token');
+                var url = $(this).data('base-url')+"/deletecard/"+card_token;
+                var data = {
+                    '_token' : csrf_token,
+                };
+
+                console.log(thiss.parent().length);
+                //thiss.parent().hide();
+
+                var post = $.post(url, data);
+                post.done(function(xhr){
+                    if(xhr.status === "success" ){
+                        if(thiss.parent().length === 1){
+                            $("#cardNumberHelpBlock").hide();
+                            $('#collapseCards').removeClass('show');
+                            $('#form_credit_card').show();
+                        }
+                    }
+                });
+            });
+
+            $('body').on('submit', '#form_editcard', function(){
+                var card_token = $(this).find("#card-token").val();
+                var url = $(this).data("base-url") + "/editcard/" + card_token;
+                var data = $(this).serialize();
+
+                var post = $.post(url, data);
+                post.done(function(xhr){
+                    if(xhr.status === "success"){
+                        $("#message").html('' +
+                            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                            '<strong>'+xhr.status_description+'</strong>' +
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                            '</button>' +
+                            '</div>');
+                    }else{
+                        $("#message").html('' +
+                            '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                            '<strong>'+xhr.status_description+'</strong>' +
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                            '</button>' +
+                            '</div>');
+                    }
+                });
+            });
+
+
+
 
         });
     </script>

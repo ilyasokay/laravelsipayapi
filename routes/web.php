@@ -37,9 +37,12 @@ use App\Http\Controllers\CardController;
   Route::post('/installments', [HomeController::class, 'installments'])->name('installments');
   Route::get('/commissions', [HomeController::class, 'commissions'])->name('commissions');
 
-  Route::get('/cards', [CardController::class, 'getSaveCards'])->name('cards');
+  //Route::get('/cards', [CardController::class, 'getSaveCards'])->name('cards');
+  Route::get('/cards', [CardController::class, 'getCardTokens'])->name('cards');
   Route::get('/savecard', [CardController::class, 'saveCard'])->name('savecard');
   Route::get('/editcard/{card_token}', [CardController::class, 'editCard'])->name('editcard');
+  Route::post('/editcard/{card_token}', [CardController::class, 'editCard'])->name('editcard');
+  Route::post('/deletecard/{card_token}', [CardController::class, 'deleteCard'])->name('deletecard');
 
   Route::get('/paySmart3D', [HomeController::class, 'paySmart3D'])->name('paySmart3D');
   Route::get('/paySmart2D', [HomeController::class, 'paySmart2D'])->name('paySmart2D');

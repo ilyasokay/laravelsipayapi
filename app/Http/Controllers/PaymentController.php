@@ -38,7 +38,59 @@ class PaymentController extends Controller
     // Payment
     public function store(Request $request)
     {
-        //dd($request->all());
+
+        if(! auth()->check()){
+            return redirect()->route('index')
+                ->with('error_message', 'Please login!');
+        }
+
+        $user = User::find(auth()->user()->id);
+        $address = $user->address;
+        $getToken = Sipay::getToken();
+
+        // If the registered card is not selected, give an error.
+        if($request->has('payment_save_card')){
+            if($request->input('card_token') == null){
+
+                return redirect()
+                    ->route('payment.index')
+                    ->with('warning_message', 'Please select a card.');
+            }
+        }
+
+        if($request->input('save_my_card')){
+
+            $saveCardHashKey = Sipay::generateSaveCardCreateHashKey(
+                config('payment.sipay.api_merchant_key'),
+                $user->customer_number,
+                $request->input('credit_card'),
+                $request->input('fullname'),
+                $request->input('expiry_month'),
+                $request->input('expiry_year'),
+                config('payment.sipay.app_secret')
+            );
+
+            $inputs = [
+                'merchant_key' => config('payment.sipay.api_merchant_key'),
+                'card_holder_name' => $request->input('fullname'),
+                'card_number' => $request->input('credit_card'),
+                'expiry_month' => $request->input('expiry_month'),
+                'expiry_year' => $request->input('expiry_year'),
+                'customer_number' => $user->customer_number,
+                'hash_key' => $saveCardHashKey,
+                'customer_name' => $request->input('fullname'),
+                'customer_phone' => $user->phone,
+            ];
+
+            $saveCard  = Sipay::saveCard($getToken->token, $inputs);
+
+            if(@$saveCard->status_code != 100){
+                return redirect()
+                    ->route('payment.index')
+                    ->with('warning_message', 'Save card insertion not successful');
+            }
+        }
+
         $items = [];
 
         // Get Items
@@ -58,9 +110,6 @@ class PaymentController extends Controller
        // $invoice_id = rand(10000000001, 99999999999);
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
-
-        $user = User::find(auth()->user()->id);
-        $address = $user->address;
 
         $order = Order::query()->create([
             'status' => Order::STATUS_PAYMENT_WAITING,
@@ -83,7 +132,7 @@ class PaymentController extends Controller
         ]);
 
 
-        $hash = Sipay::generateHashKey($request->input('total'),$request->input('installments_number'),'TRY',$merchant_key,$invoice->id,$app_secret);
+        $hash = Sipay::generateHashKey($request->input('total'),$request->input('installments_number',1),'TRY',$merchant_key,$invoice->id,$app_secret);
 
         $fullname = explode(" ", $request->input('fullname'));
         $name = $fullname[0]; $surname = $fullname[count($fullname) - 1];
@@ -95,7 +144,7 @@ class PaymentController extends Controller
             'expiry_year' => $request->input('expiry_year'),
             'cvv' => $request->input('cvv'),
             'currency_code' => 'TRY',
-            'installments_number' => $request->input('installments_number'),
+            'installments_number' => $request->input('installments_number', 1),
             'invoice_id' => $invoice->id,
             'invoice_description' => $invoice->description,
             'total' => $request->input('total'),
@@ -105,6 +154,24 @@ class PaymentController extends Controller
             'hash_key' => $hash,
             'items' => $items,
         ];
+
+        if($request->has('card_token') && $request->input('customer_number')){
+            $inputs['card_token'] = $request->input('card_token');
+
+            $inputs['customer_number'] = $request->input('customer_number');
+            $inputs['customer_email'] = $request->input('customer_email');
+            $inputs['customer_phone'] = $request->input('customer_phone');
+            $inputs['customer_name'] = $user->name;
+            $inputs['currency_code'] = $request->input('currency_code');
+
+            $inputs['items'] = json_encode($inputs['items'], JSON_UNESCAPED_UNICODE);
+            $inputs['return_url'] = route('success');
+            $inputs['cancel_url'] = route('fail');
+
+            $payByCardToken = Sipay::payByCardToken($inputs);
+
+            return $payByCardToken;
+        }
 
         if($request->has('is_3d') && $request->input('is_3d') == 1){
             $inputs['items'] = json_encode($inputs['items'], JSON_UNESCAPED_UNICODE);
@@ -116,10 +183,15 @@ class PaymentController extends Controller
             return $paySmart3D->body();
         }
 
-        $token = Sipay::getToken();
-        $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
+        $paySmart2D = Sipay::paySmart2D($getToken->token, $inputs);
 
         if(!is_null($paySmart2D)){
+
+            if($paySmart2D->status_code != 100){
+                return redirect()
+                    ->route('payment.index')
+                    ->with('error_message', $paySmart2D->status_description. " - Status Code: ". $paySmart2D->status_code);
+            }
 
             Cookie::queue(Cookie::forget('shopping_cart'));
 

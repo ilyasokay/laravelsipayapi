@@ -114,10 +114,22 @@ class Sipay
             Log::debug('PAYMENT_2D_SUCCESS', [$request->data]);
             return $request->data;
         }else{
+            return $request;
             Log::debug('PAYMENT_2D_ERROR', [$request]);
         }
 
         return null;
+    }
+
+    // Pay By Card Token
+    public static function payByCardToken($inputs = [])
+    {
+        $request = Http::withHeaders([
+            'Accept' => 'application/json'
+        ])
+        ->post(config('payment.sipay.api_url') . "/api/payByCardToken",$inputs);
+
+        return $request->body();
     }
 
     // Check Status
@@ -176,6 +188,7 @@ class Sipay
         }elseif ($request->status() == 404){
             $fakeSaveCardList = [
                 [
+                    "type" => 'Fake Card Info',
                     "id" => 11,
                     "pos_id" => 0,
                     "card_token" => "KELUUKPQBCGYLV7FP7I7VUQNZP7N5UX7JUCPKZVOPKEMCEQP",
@@ -193,6 +206,33 @@ class Sipay
         }
 
         return null;
+    }
+
+    // Get Card Tokens
+    public static function getCardTokens($token, $inputs)
+    {
+        $request = Http::withHeaders([
+            'Authorization' => 'Bearer '. $token,
+            'Accept' => 'application/json'
+        ])
+        ->get(config('payment.sipay.api_url') . "/api/getCardTokens",$inputs);
+
+        if($request->status() == 200){
+            $object = $request->object();
+
+            if($object->status_code == 100){
+                Log::debug('GET_CARD_TOKENS_SUCCESS', [$object]);
+                return $object;
+            }
+
+            Log::debug('GET_CARD_TOKENS_ERROR', [$object]);
+            return $object;
+
+        }
+
+        Log::debug('GET_CARD_TOKENS_ERROR', [$request->object()]);
+        return null;
+
     }
 
     // Create Save Card
@@ -245,6 +285,33 @@ class Sipay
         }
 
         Log::debug('SAVE_CARD_EDIT_ERROR', [$request->body()]);
+
+        return null;
+    }
+
+    // Delete Save Card
+    public static function deleteCard($token, $inputs)
+    {
+        $request = Http::withHeaders([
+            'Authorization' => 'Bearer '. $token,
+            'Accept' => 'application/json'
+        ])
+            ->post(config('payment.sipay.api_url') . "/api/deleteCard",$inputs);
+
+        if($request->status() == 200){
+            $object = $request->object();
+            if($object->status_code == 100){
+
+                Log::debug('SAVE_CARD_DELETE_SUCCESS', [$object]);
+
+                return $object;
+            }
+            Log::debug('SAVE_CARD_DELETE_ERROR', [$object]);
+
+            return $object;
+        }
+
+        Log::debug('SAVE_CARD_DELETE_ERROR', [$request->body()]);
 
         return null;
     }
