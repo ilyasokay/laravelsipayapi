@@ -187,7 +187,7 @@ class PaymentController extends Controller
 
         if(!is_null($paySmart2D)){
 
-            if($paySmart2D->status_code != 100){
+            if(@$paySmart2D->status_code != 100){
                 return redirect()
                     ->route('payment.index')
                     ->with('error_message', $paySmart2D->status_description. " - Status Code: ". $paySmart2D->status_code);
