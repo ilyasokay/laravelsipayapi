@@ -87,6 +87,7 @@ class PaymentController extends Controller
             if(@$saveCard->status_code != 100){
                 return redirect()
                     ->route('payment.index')
+                    ->with('data', $saveCard)
                     ->with('warning_message', 'Save card insertion not successful');
             }
         }
@@ -155,6 +156,7 @@ class PaymentController extends Controller
             'items' => $items,
         ];
 
+        // Kayıtlı Kart ile ödeme
         if($request->has('card_token') && $request->input('customer_number')){
             $inputs['card_token'] = $request->input('card_token');
 
@@ -190,6 +192,7 @@ class PaymentController extends Controller
             if($paySmart2D->status_code != 100){
                 return redirect()
                     ->route('payment.index')
+                    ->with('data', $paySmart2D)
                     ->with('error_message', $paySmart2D->status_description. " - Status Code: ". $paySmart2D->status_code);
             }
 
@@ -205,11 +208,12 @@ class PaymentController extends Controller
 
             return redirect()
                 ->route('index')
+                ->with('data', $paySmart2D)
                 ->with('success_message', 'Payment Success..');
         }
 
         return redirect()
             ->route('payment.index')
-            ->with('error_message', 'Payment Error!..');
+            ->with('error_message', 'Payment Error, Return data NULL');
     }
 }

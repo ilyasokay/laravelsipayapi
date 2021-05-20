@@ -234,11 +234,13 @@ class HomeController extends Controller
 
             return redirect()
                 ->route('index')
+                ->with('data', $request->all())
                 ->with('success_message', 'Payment Success..');
         }
 
         return redirect()
             ->route('payment.index')
+            ->with('data', $request->all())
             ->with('error_message', 'Payment Error..');
 
     }
@@ -246,10 +248,12 @@ class HomeController extends Controller
     // Cancel Url - Fail
     public function fail(Request $request)
     {
+
         Log::debug('PAYMENT_3D_ERROR', [$request->all()]);
 
         return redirect()
             ->route('payment.index')
+            ->with('data', $request->all())
             ->with('error_message', 'Payment Error..');
     }
 

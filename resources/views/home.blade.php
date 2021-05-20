@@ -30,6 +30,12 @@
                             </div>
                         @endif
 
+                        @if ($data = Session::get('data'))
+                            <pre class="prettyprint">
+                                {{ collect($data)->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
+                            </pre>
+                        @endif
+
                         <div class="row">
                             @foreach($products as $product)
                                 <div class="col-sm-12 col-md-6 col-lg-4 mb-4">

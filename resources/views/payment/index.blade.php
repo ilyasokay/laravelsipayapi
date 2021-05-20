@@ -120,6 +120,12 @@
                                                 </div>
                                             @endif
 
+                                            @if ($data = Session::get('data'))
+                                                <pre class="prettyprint">
+                                                    {{ collect($data)->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
+                                                </pre>
+                                            @endif
+
                                             <br>
                                             <h4 id="cardNumberHelpBlock" class="form-text text-muted font-weight-bold">
                                                 <a onclick="Javascript:$('#form_credit_card').fadeToggle();" data-toggle="collapse" href="#collapseCards" role="button" aria-expanded="false" aria-controls="collapseExample">
