@@ -58,6 +58,7 @@ class PaymentController extends Controller
             }
         }
 
+        // Kart kaydetme seçilmişse bu kısımm çalışıyor.
         if($request->input('save_my_card')){
 
             $saveCardHashKey = Sipay::generateSaveCardCreateHashKey(

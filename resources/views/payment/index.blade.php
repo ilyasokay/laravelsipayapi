@@ -580,19 +580,34 @@
                     '_token' : csrf_token,
                 };
 
-                console.log(thiss.parent().length);
-                //thiss.parent().hide();
+                /*
+                console.log(thiss.parent().parent().find('.list-group-item').length);
+                if(thiss.parent().parent().find('.list-group-item').length > 1){
+                    thiss.parent().remove();
+                }else{
+                    $("#cardNumberHelpBlock").hide();
+                    $('#collapseCards').removeClass('show');
+                    $('#form_credit_card').show();
+                }
+
+*/
+
 
                 var post = $.post(url, data);
                 post.done(function(xhr){
                     if(xhr.status === "success" ){
-                        if(thiss.parent().length === 1){
+
+                        console.log(thiss.parent().parent().find('.list-group-item').length);
+                        if(thiss.parent().parent().find('.list-group-item').length > 1){
+                            thiss.parent().remove();
+                        }else{
                             $("#cardNumberHelpBlock").hide();
                             $('#collapseCards').removeClass('show');
                             $('#form_credit_card').show();
                         }
                     }
                 });
+
             });
 
             $('body').on('submit', '#form_editcard', function(){
