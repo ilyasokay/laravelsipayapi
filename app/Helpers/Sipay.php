@@ -107,18 +107,23 @@ class Sipay
             'Authorization' => 'Bearer '. $token,
             'Accept' => 'application/json'
         ])
-        ->post(config('payment.sipay.api_url') . "/api/paySmart2D",$inputs)->object();
+        ->post(config('payment.sipay.api_url') . "/api/paySmart2D",$inputs);
 
-        if($request->status_code == 100)
-        {
-            Log::debug('PAYMENT_2D_SUCCESS', [$request->data]);
-            return $request;
-        }else{
-            return $request;
-            Log::debug('PAYMENT_2D_ERROR', [$request]);
+        if($request->status() == 200){
+            $object = $request->object();
+
+            if($object->status_code == 100)
+            {
+                Log::debug('PAYMENT_2D_SUCCESS', [$object]);
+
+            }else{
+                Log::debug('PAYMENT_2D_ERROR', [$object]);
+            }
         }
 
-        return null;
+        Log::debug('PAYMENT_2D_ERROR', [$request->object()]);
+
+        return $request;
     }
 
     // Pay By Card Token

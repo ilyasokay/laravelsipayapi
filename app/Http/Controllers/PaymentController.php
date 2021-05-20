@@ -188,33 +188,36 @@ class PaymentController extends Controller
 
         $paySmart2D = Sipay::paySmart2D($getToken->token, $inputs);
 
-        if(!is_null($paySmart2D)){
+        if($paySmart2D->status() == 200){
 
-            if($paySmart2D->status_code != 100){
+            $object = $paySmart2D->object();
+
+            if($object->status_code != 100){
                 return redirect()
                     ->route('payment.index')
-                    ->with('data', $paySmart2D)
-                    ->with('error_message', $paySmart2D->status_description. " - Status Code: ". $paySmart2D->status_code);
+                    ->with('data', $object)
+                    ->with('error_message', $object->status_description. " - Status Code: ". $object->status_code);
             }
 
             Cookie::queue(Cookie::forget('shopping_cart'));
 
-            $invoice = Bill::query()->find($paySmart2D->data->invoice_id);
+            $invoice = Bill::query()->find($object->data->invoice_id);
             if($invoice){
                 $invoice->order->update([
                     'status' => Order::STATUS_PAYMENT_SUCCESS,
-                    'payment_order_no' => $paySmart2D->data->order_id
+                    'payment_order_no' => $object->data->order_id
                 ]);
             }
 
             return redirect()
                 ->route('index')
-                ->with('data', $paySmart2D)
+                ->with('data', $object)
                 ->with('success_message', 'Payment Success..');
         }
 
         return redirect()
             ->route('payment.index')
+            ->with('data', $paySmart2D->object())
             ->with('error_message', 'Payment Error, Return data NULL');
     }
 }
