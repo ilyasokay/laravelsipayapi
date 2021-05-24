@@ -221,25 +221,6 @@ class HomeController extends Controller
 
 
 
-/*
-        $inputs = [
-            'cc_holder_name' => 'Aigerim',
-            'cc_no' => 5355765990527226,
-            'expiry_month' => 06,
-            'expiry_year' => 2023,
-            'cvv' => '555',
-            'currency_code' => 'TRY',
-            'installments_number' => 1,
-            'invoice_id' => $invoice_id,
-            'invoice_description' => 'INVOICE TEST DESCRIPTION',
-            'total' => 5.00,
-            'merchant_key' => $merchant_key,
-            'items' => $items,
-            'name' => 'John',
-            'surname' => 'Dao',
-            'hash_key' => $hash,
-        ];
-/*
         if($request->has('sale')){
             $inputs["card_program"] = 'MAXIMUM';
             $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
@@ -254,7 +235,7 @@ class HomeController extends Controller
             $inputs["recurring_payment_cycle"] = 'D';
             $inputs["recurring_payment_interval"] = 1;
         }
-*/
+
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
         echo $paySmart2D;
     }
