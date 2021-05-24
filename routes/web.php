@@ -6,6 +6,7 @@ use App\Http\Controllers\BasketController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\WebHookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,21 @@ use App\Http\Controllers\CardController;
   Route::get('/fail', [HomeController::class, 'fail'])->name('fail');
   Route::get('/hash/{invoice_id}', [HomeController::class, 'hash'])->name('hash');
   Route::get('/token', [HomeController::class, 'token'])->name('token');
+  Route::get('/transaction', [HomeController::class, 'getTransactions'])->name('transaction');
+  Route::post('/transaction', [HomeController::class, 'getTransactions'])->name('transaction');
+
+
+
+
+  Route::any('/sale-web-hook', [WebHookController::class, 'saleWebHook'])
+      ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+      ->name('webhook.sale');
+
+  Route::any('/recurring-web-hook', [WebHookController::class, 'recurringWebHook'])
+      ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+      ->name('webhook.recurring');
+
+
 
 
 

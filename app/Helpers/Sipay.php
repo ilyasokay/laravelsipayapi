@@ -9,8 +9,18 @@ use Illuminate\Support\Facades\Log;
 
 class Sipay
 {
+    public static function baseUrl()
+    {
+        if(session('sp_base_url'))
+        {
+            return session('sp_base_url');
+        }
+
+        return config('payment.sipay.prov.api_url');
+    }
+
     // Get Token
-    public static function getToken()
+    public static function getToken($appId = null, $appSecret = null, $appUrl = null)
     {
 /*
         if(session('sp_token'))
@@ -22,10 +32,10 @@ class Sipay
         }
 */
         $request = Http::post(
-            config('payment.sipay.api_url') . "/api/token",
+            $appUrl ?? config('payment.sipay.api_url') . "/api/token",
             [
-                'app_id' => config('payment.sipay.app_key'),
-                'app_secret' => config('payment.sipay.app_secret')
+                'app_id' => $appId ?? config('payment.sipay.app_key'),
+                'app_secret' => $appSecret ?? config('payment.sipay.app_secret')
             ]
         )->object();
 
@@ -172,6 +182,19 @@ class Sipay
         ])
             ->post(config('payment.sipay.api_url') . "/api/refund",$inputs)
             ->object();
+
+        return $request;
+    }
+
+    // Get Transaction
+
+    public static function getTransactions($token, $inputs = [])
+    {
+        $request = Http::withHeaders([
+            'Authorization' => 'Bearer '. $token,
+            'Accept' => 'application/json'
+        ])
+            ->post(config('payment.sipay.api_url') . "/api/getTransactions",$inputs);
 
         return $request;
     }
@@ -363,6 +386,36 @@ class Sipay
 
         return $msg_encrypted_bundle;
     }
+
+    public static function generateTransactionHashKey(
+        $merchant_key,
+        $date,
+        $invoiceid = "",
+        $currency_id = "",
+        $paymentmethodid = "",
+        $minamount = "",
+        $maxamount = "",
+        $transactionState = ""
+    ){
+
+        $data = $date.'|'.$invoiceid.'|'.$currency_id.'|'.$paymentmethodid.'|'.$minamount.'|'.$maxamount.'|'.$transactionState;
+
+        $iv = substr(sha1(mt_rand()), 0, 16);
+        $password = sha1($merchant_key);
+
+        $salt = substr(sha1(mt_rand()), 0, 4);
+        $saltWithPassword = hash('sha256', $password . $salt);
+
+        $encrypted = openssl_encrypt(
+            "$data", 'aes-256-cbc', "$saltWithPassword", null, $iv
+        );
+        $msg_encrypted_bundle = "$iv:$salt:$encrypted";
+        $hash_key = str_replace('/', '__', $msg_encrypted_bundle);
+
+        return $hash_key;
+    }
+
+
 
     // Hash Key
     public static function generateHashKey(

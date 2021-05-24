@@ -180,7 +180,7 @@ class HomeController extends Controller
     }
 
     // Non 3D Payment
-    public function paySmart2D()
+    public function paySmart2D(Request $request)
     {
         $token = Sipay::getToken();
 
@@ -195,7 +195,7 @@ class HomeController extends Controller
 
         $inputs = [
             'cc_holder_name' => 'John Dao',
-            'cc_no' => 5406675406675403,
+            'cc_no' => 4508034508034509,
             'expiry_month' => 12,
             'expiry_year' => 2026,
             'cvv' => '000',
@@ -210,6 +210,21 @@ class HomeController extends Controller
             'surname' => 'Dao',
             'hash_key' => $hash,
         ];
+
+        if($request->has('sale')){
+            $inputs["card_program"] = 'MAXIMUM';
+            $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
+        }
+
+        if($request->has('recurring')){
+            $inputs["order_type"] = 1;
+            $inputs["card_program"] = 'MAXIMUM';
+            $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
+            $inputs["recurring_web_hook_key"] = 'heroku_recurring_webhook';
+            $inputs["recurring_payment_number"] = 5;
+            $inputs["recurring_payment_cycle"] = 'D';
+            $inputs["recurring_payment_interval"] = 1;
+        }
 
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
         echo $paySmart2D;
@@ -279,5 +294,49 @@ class HomeController extends Controller
         Log::debug('TEST_LOG', [$data]);
 
         echo "Log Created";
+    }
+
+    public function getTransactions(Request $request)
+    {
+        if($request->method() == "GET")
+        {
+                $form = '
+                    <form method="post" action="">
+                    <input type="hidden" name="_token" value="'.csrf_token().'" /><br>
+                    <input name="merchant_key" placeholder="Merchant Key" /><br>
+                    <input name="app_secret" placeholder="App Secret" /><br>
+                    <input name="app_key" placeholder="App Key" /><br>
+                    <input type="date" name="date" placeholder="2021-05-21" /><br>
+                    <button>Submit</button>
+                    </form>
+                    ';
+                echo $form;
+                exit;
+        }
+
+
+/*
+        $merchant_key = config('payment.sipay.api_merchant_key');
+        $app_secret = config('payment.sipay.app_secret');
+        $app_key = config('payment.sipay.app_key');
+*/
+        $merchant_key = $request->input('merchant_key');
+        $app_secret = $request->input('app_secret');
+        $app_key = $request->input('app_key');
+        $date = $request->input('date');
+
+        $getToken = Sipay::getToken($app_key, $app_secret);
+
+        $tHashKey = Sipay::generateTransactionHashKey($merchant_key, $date);
+
+        $tInputs = [
+            "merchant_key" => $merchant_key,
+            "hash_key" => $tHashKey,
+            "date" => $date,
+        ];
+
+        $transaction = Sipay::getTransactions($getToken->token, $tInputs);
+
+        return response()->json($transaction->object());
     }
 }
