@@ -48,9 +48,14 @@ use App\Http\Controllers\WebHookController;
   Route::get('/paySmart3D', [HomeController::class, 'paySmart3D'])->name('paySmart3D');
   Route::get('/paySmart2D', [HomeController::class, 'paySmart2D'])->name('paySmart2D');
 
-  Route::get('/success', [HomeController::class, 'success'])->name('success');
-  Route::get('/fail', [HomeController::class, 'fail'])->name('fail');
-  Route::get('/hash/{invoice_id}', [HomeController::class, 'hash'])->name('hash');
+  Route::get('/success', [HomeController::class, 'success'])
+      ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+      ->name('success');
+  Route::get('/fail', [HomeController::class, 'fail'])
+      ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+      ->name('fail');
+  Route::get('/hash', [HomeController::class, 'hash'])->name('hash');
+  Route::post('/hash', [HomeController::class, 'hash'])->name('hash');
   Route::get('/token', [HomeController::class, 'token'])->name('token');
   Route::get('/transaction', [HomeController::class, 'getTransactions'])->name('transaction');
   Route::post('/transaction', [HomeController::class, 'getTransactions'])->name('transaction');

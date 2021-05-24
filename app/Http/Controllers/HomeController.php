@@ -182,9 +182,10 @@ class HomeController extends Controller
     // Non 3D Payment
     public function paySmart2D(Request $request)
     {
+
         $token = Sipay::getToken();
 
-        $invoice_id = rand(10000000001, 99999999999);
+        $invoice_id = rand(10000000001, 99999999999).time();
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
 
@@ -192,12 +193,19 @@ class HomeController extends Controller
 
         $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
 
+        /*
+'cc_holder_name' => 'Aigerim',
+'cc_no' => 5355765990527226,
+'expiry_month' => "06",
+'expiry_year' => "2023",
+'cvv' => '555',
+*/
 
         $inputs = [
             'cc_holder_name' => 'John Dao',
-            'cc_no' => 4508034508034509,
-            'expiry_month' => 12,
-            'expiry_year' => 2026,
+            'cc_no' => 5406675406675403,
+            'expiry_month' => "12",
+            'expiry_year' => "2026",
             'cvv' => '000',
             'currency_code' => 'TRY',
             'installments_number' => 1,
@@ -211,6 +219,27 @@ class HomeController extends Controller
             'hash_key' => $hash,
         ];
 
+
+
+/*
+        $inputs = [
+            'cc_holder_name' => 'Aigerim',
+            'cc_no' => 5355765990527226,
+            'expiry_month' => 06,
+            'expiry_year' => 2023,
+            'cvv' => '555',
+            'currency_code' => 'TRY',
+            'installments_number' => 1,
+            'invoice_id' => $invoice_id,
+            'invoice_description' => 'INVOICE TEST DESCRIPTION',
+            'total' => 5.00,
+            'merchant_key' => $merchant_key,
+            'items' => $items,
+            'name' => 'John',
+            'surname' => 'Dao',
+            'hash_key' => $hash,
+        ];
+/*
         if($request->has('sale')){
             $inputs["card_program"] = 'MAXIMUM';
             $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
@@ -225,7 +254,7 @@ class HomeController extends Controller
             $inputs["recurring_payment_cycle"] = 'D';
             $inputs["recurring_payment_interval"] = 1;
         }
-
+*/
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
         echo $paySmart2D;
     }
@@ -273,11 +302,96 @@ class HomeController extends Controller
     }
 
     // Generate Hash Code
-    public function hash($invoice_id)
+    public function hash(Request $request)
     {
-        $hash = Sipay::generateHashKey(5.00,1,'TRY','$2y$10$HmRgYosneqcwHj.UH7upGuyCZqpQ1ITgSMj9Vvxn.t6f.Vdf2SQFO',$invoice_id,'b46a67571aa1e7ef5641dc3fa6f1712a');
+        if($request->method() == "GET")
+        {
 
-        echo $hash;
+            $merchant_key = config('payment.sipay.api_merchant_key');
+            $app_secret = config('payment.sipay.app_secret');
+            $app_key = config('payment.sipay.app_key');
+            $invoice_id = rand(10000000001, 99999999999).(time() + 1);
+
+            $form = '
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+                    <div class="col-lg-6">
+                    <form method="post" action="">
+                    <input type="hidden" name="_token" value="'.csrf_token().'" />
+                    <div class="form-group">
+                        <label>Merchant Key</label>
+                        <input class="form-control" name="merchant_key" value="'.$merchant_key.'" placeholder="Merchant Key" />
+                    </div>
+                    <div class="form-group">
+                        <label>App Secret</label>
+                        <input class="form-control" name="app_secret" value="'.$app_secret.'" placeholder="Merchant Key" />
+                    </div>
+                    <div class="form-group">
+                        <label>App Key</label>
+                        <input class="form-control" name="app_key" value="'.$app_key.'" placeholder="Merchant Key" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Invoice ID</label>
+                        <input class="form-control" name="invoice_id" value="'.$invoice_id.'" placeholder="Merchant Key" />
+                    </div>
+
+                    <button class="btn btn-success">Submit</button>
+                    </form>
+                    </div>
+                    ';
+            echo $form;
+            exit;
+        }
+
+        if($request->method() == "POST")
+        {
+            $merchant_key = $request->input('merchant_key');
+            $app_secret = $request->input('app_secret');
+            $app_key = $request->input('app_key');
+            $invoice_id = $request->input('invoice_id');
+            $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+
+            $getToken = Sipay::getToken($app_key,$app_secret);
+
+            $form = '
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+                    <div class="col-lg-8">
+                    <form method="post" action="">
+                    <input type="hidden" name="_token" value="'.csrf_token().'" />
+                    <div class="form-group">
+                        <label>Merchant Key</label>
+                        <input disabled class="form-control" name="merchant_key" value="'.$merchant_key.'" placeholder="Merchant Key" />
+                    </div>
+                    <div class="form-group">
+                        <label>App Secret</label>
+                        <input disabled class="form-control" name="app_secret" value="'.$app_secret.'" placeholder="App Secret" />
+                    </div>
+                    <div class="form-group">
+                        <label>App Key</label>
+                        <input disabled class="form-control" name="app_key" value="'.$app_key.'" placeholder="App Key" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Invoice ID</label>
+                        <input disabled class="form-control" name="app_key" value="'.$invoice_id.'" placeholder="Invoice ID" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hash</label>
+                        <textarea disabled class="form-control" name="" id="" cols="30" rows="5">'.$hash.'</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Token</label>
+                        <textarea disabled class="form-control" name="" id="" cols="30" rows="14">'.$getToken->token.'</textarea>
+                    </div>
+                    <a class="btn btn-primary" href="'.route('hash').'"> << Back</a>
+                    <button class="btn btn-success">Submit</button>
+                    </form>
+                    </div>
+                    ';
+            echo $form;
+            exit;
+        }
     }
 
     // Get Token

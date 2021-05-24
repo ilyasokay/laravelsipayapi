@@ -16,7 +16,7 @@ class Sipay
             return session('sp_base_url');
         }
 
-        return config('payment.sipay.prov.api_url');
+        return config('payment.sipay.api_url');
     }
 
     // Get Token
@@ -31,13 +31,13 @@ class Sipay
             }
         }
 */
-        $request = Http::post(
-            $appUrl ?? config('payment.sipay.api_url') . "/api/token",
-            [
-                'app_id' => $appId ?? config('payment.sipay.app_key'),
-                'app_secret' => $appSecret ?? config('payment.sipay.app_secret')
-            ]
-        )->object();
+        $url = $appUrl ?? config('payment.sipay.api_url') . "/api/token";
+        $config = [
+            'app_id' => $appId ?? config('payment.sipay.app_key'),
+            'app_secret' => $appSecret ?? config('payment.sipay.app_secret')
+        ];
+
+        $request = Http::post($url,$config)->object();
 
         if($request->status_code == 100){
             session()->put('sp_token', $request->data);
@@ -113,11 +113,17 @@ class Sipay
     // Non 3D Payment
     public static function paySmart2D($token, $inputs = [])
     {
-        $request = Http::withHeaders([
+        $headers = [
             'Authorization' => 'Bearer '. $token,
             'Accept' => 'application/json'
-        ])
-        ->post(config('payment.sipay.api_url') . "/api/paySmart2D",$inputs);
+        ];
+
+        $url = config('payment.sipay.api_url') . "/api/paySmart2D";
+
+        $request = Http::withHeaders($headers)
+        ->post($url, $inputs);
+
+        dd($request->body());
 
         if($request->status() == 200){
             $object = $request->object();
