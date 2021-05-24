@@ -9,11 +9,12 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
     // Index
-    public function index()
+    public function index(Request $request)
     {
         $getToken = Sipay::getToken();
         $is_3d = is_null($getToken) ? 0 : $getToken->is_3d;
