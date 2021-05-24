@@ -194,14 +194,6 @@ class HomeController extends Controller
 
         $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
 
-        /*
-'cc_holder_name' => 'Aigerim',
-'cc_no' => 5355765990527226,
-'expiry_month' => "06",
-'expiry_year' => "2023",
-'cvv' => '555',
-*/
-
         $inputs = [
             'cc_holder_name' => 'John Dao',
             'cc_no' => 5406675406675403,
@@ -223,14 +215,13 @@ class HomeController extends Controller
 
 
         if($request->has('sale')){
-            $inputs["card_program"] = 'MAXIMUM';
             $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
         }
 
         if($request->has('recurring')){
             $inputs["order_type"] = 1;
             $inputs["card_program"] = 'MAXIMUM';
-            $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
+           // $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
             $inputs["recurring_web_hook_key"] = 'heroku_recurring_webhook';
             $inputs["recurring_payment_number"] = 5;
             $inputs["recurring_payment_cycle"] = 'D';
