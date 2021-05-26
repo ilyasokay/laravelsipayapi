@@ -36,7 +36,7 @@ class SettingController extends Controller
             'app_secret',
         ]);
 
-        $minutes = 60;
+        $minutes = 60 * 24 * 30;
         Cookie::queue(Cookie::make('sipay_api_config', json_encode($requestOnly), $minutes));
 
         return redirect()
