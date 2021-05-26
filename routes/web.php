@@ -7,6 +7,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\WebHookController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,10 @@ use App\Http\Controllers\WebHookController;
 */
 
   Route::get('/', [HomeController::class, 'index'])->name('index');
+  Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+  Route::post('/setting-update', [SettingController::class, 'update'])->name('setting.update');
+
+
   Route::get('/log-create/{data}', [HomeController::class, 'createLog'])->name('log.create');
   Route::get('/basket', [BasketController::class, 'index'])->name('basket.index');
   Route::post('/basket/{product_id}/add', [BasketController::class, 'basketAdd'])->name('basket.add');
@@ -47,13 +52,16 @@ use App\Http\Controllers\WebHookController;
 
   Route::get('/paySmart3D', [HomeController::class, 'paySmart3D'])->name('paySmart3D');
   Route::get('/paySmart2D', [HomeController::class, 'paySmart2D'])->name('paySmart2D');
+  Route::get('/payByCardToken', [HomeController::class, 'payByCardToken'])->name('payByCardToken');
 
   Route::get('/success', [HomeController::class, 'success'])
       ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
       ->name('success');
+
   Route::get('/fail', [HomeController::class, 'fail'])
       ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
       ->name('fail');
+
   Route::get('/hash', [HomeController::class, 'hash'])->name('hash');
   Route::post('/hash', [HomeController::class, 'hash'])->name('hash');
   Route::get('/token', [HomeController::class, 'token'])->name('token');

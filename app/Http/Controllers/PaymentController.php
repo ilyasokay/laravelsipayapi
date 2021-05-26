@@ -133,7 +133,10 @@ class PaymentController extends Controller
             'bill_phone' => '5370000000',
         ]);
 
+        $invoice->id = $invoice->id + time() + time() + rand(1000,9999) +1;
+        $invoice->save();
 
+//dd($invoice);
         $hash = Sipay::generateHashKey($request->input('total'),$request->input('installments_number',1),'TRY',$merchant_key,$invoice->id,$app_secret);
 
         $fullname = explode(" ", $request->input('fullname'));

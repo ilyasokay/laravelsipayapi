@@ -24,6 +24,15 @@
 </head>
 <body>
     <div id="app">
+        @if($sipay_api_url)
+            <div class="alert alert-warning alert-dismissible mb-0 text-center fade show" role="alert">
+                <strong>API URL: <span class="text-danger">{{ $sipay_api_url ?? "" }}</span></strong>
+
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -79,6 +88,9 @@
                                 </div>
                             </li>
                         @endguest
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('setting.index') }}"><i class="fas fa-cog"></i> Setting</a>
+                        </li>
                     </ul>
                 </div>
             </div>

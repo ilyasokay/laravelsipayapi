@@ -123,7 +123,7 @@ class Sipay
         $request = Http::withHeaders($headers)
         ->post($url, $inputs);
 
-        dd($request->body());
+       // dd($request->body());
 
         if($request->status() == 200){
             $object = $request->object();

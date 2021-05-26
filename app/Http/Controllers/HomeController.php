@@ -232,6 +232,52 @@ class HomeController extends Controller
         echo $paySmart2D;
     }
 
+
+    // Pay By Card Token
+    public function payByCardToken(Request $request)
+    {
+        $invoice_id = rand(1000,9999) + time() + rand(1000,9999);
+
+        $merchant_key = config('payment.sipay.api_merchant_key');
+        $app_secret = config('payment.sipay.app_secret');
+
+        $hash = Sipay::generateHashKey($request->input('total', 5),$request->input('installments_number',1),'TRY',$merchant_key,$invoice_id,$app_secret);
+
+        $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
+
+        $inputs = [
+              "cc_holder_name" => null,
+              "cc_no" => null,
+              "expiry_month" => null,
+              "expiry_year" => null,
+              "cvv" => null,
+              "currency_code" => "TRY",
+              "installments_number" => 1,
+              "invoice_id" => $invoice_id,
+              "invoice_description" => "Incoice description 7037",
+              "total" => "5.00",
+              "merchant_key" => $merchant_key,
+              "name" => "",
+              "surname" => "",
+              "hash_key" => $hash,
+              "items" => json_encode($items),
+              //"card_token" => "UMUFYKCRAS6RGX5OAKU6O6UPJAMPPZVRZZ7LD6GV5Y373ZX2",
+              "card_token" => "3TRLZ2VJUYQV6TW6JZMPYGJZRPH324VI7U6FRBSFP7FTENZ6",
+              "customer_number" => "1621936829-99959",
+              "customer_email" => "phauck@example.com",
+              "customer_phone" => "5724635373",
+              "customer_name" => "Donna Altenwerth",
+              "return_url" => "https://laravelsipayapi.test/success",
+              "cancel_url" => "https://laravelsipayapi.test/fail",
+        ];
+
+
+        $payByCardToken = Sipay::payByCardToken($inputs);
+
+        return $payByCardToken;
+
+    }
+
     // Return Url - Success
     public function success(Request $request)
     {
