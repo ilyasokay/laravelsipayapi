@@ -151,13 +151,19 @@ class HomeController extends Controller
         $invoice_id = rand(10000000001, 99999999999);
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
-        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+        $hash = Sipay::generateHashKey(44.44,1,'TRY',$merchant_key,$invoice_id,$app_secret);
 
-        $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
+        $items = [["name" => "Item3","price" => 44.44,"quantity" => 1,"description" =>"item3 description"]];
+
+        $success_url = route('success');
+        $cancel_url = route('fail');
+
+       // $success_url = 'https://test.masterpassturkiye.com/RedirectServer/MMIUIMasterPass_V2/s3d/bank/success?RRN=500019510214';
+       // $cancel_url = 'https://test.masterpassturkiye.com/RedirectServer/MMIUIMasterPass_V2/s3d/bank/error?RRN=500019510214';
 
         $inputs = [
             'cc_holder_name' => 'John Dao',
-            'cc_no' => 5406675406675403,
+            'cc_no' => 4508034508034509,
             'expiry_month' => 12,
             'expiry_year' => 2026,
             'cvv' => '000',
@@ -165,14 +171,14 @@ class HomeController extends Controller
             'installments_number' => 1,
             'invoice_id' => $invoice_id,
             'invoice_description' => 'INVOICE TEST DESCRIPTION',
-            'total' => 5.00,
+            'total' => 44.44,
             'merchant_key' => $merchant_key,
             'items' => json_encode($items, JSON_UNESCAPED_UNICODE),
             'name' => 'John',
             'surname' => 'Dao',
             'hash_key' => $hash,
-            'return_url' => route('success'),
-            'cancel_url' => route('fail')
+            'return_url' => $success_url,
+            'cancel_url' => $cancel_url
         ];
 
         $paySmart3D = Sipay::paySmart3D($inputs);
@@ -187,13 +193,14 @@ class HomeController extends Controller
         $token = Sipay::getToken();
 
         $invoice_id = rand(10000000001, 99999999999).time();
+       // $invoice_id = 5451210313;
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
 
-        $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+        $hash = Sipay::generateHashKey(44.44,1,'TRY',$merchant_key,$invoice_id,$app_secret);
 
-        $items = [["name" => "Item3","price" => 5.00,"quantity" => 1,"description" =>"item3 description"]];
-
+        $items = [["name" => "Item3","price" => 44.44,"quantity" => 1,"description" =>"item3 description"]];
+/*
         $inputs = [
             'cc_holder_name' => 'John Dao',
             'cc_no' => 5406675406675403,
@@ -211,7 +218,31 @@ class HomeController extends Controller
             'surname' => 'Dao',
             'hash_key' => $hash,
         ];
+*/
 
+        $success_url = route('success');
+        $cancel_url = route('fail');
+
+        $inputs = [
+            'cc_holder_name' => 'Aigerim ISBANK',
+            'cc_no' => 4543147422801147,
+            'expiry_month' => "01",
+            'expiry_year' => "2025",
+            'cvv' => '775',
+            'currency_code' => 'TRY',
+            'installments_number' => 1,
+            'invoice_id' => $invoice_id,
+            'invoice_description' => 'INVOICE TEST DESCRIPTION',
+            'total' => 44.44,
+            'merchant_key' => $merchant_key,
+            'items' => $items,
+            'name' => 'John',
+            'surname' => 'Dao',
+            'hash_key' => $hash,
+            'ip' => '127.0.0.2',
+            'return_url' => $success_url,
+            'cancel_url' => $cancel_url
+        ];
 
 
         if($request->has('sale')){
@@ -221,12 +252,14 @@ class HomeController extends Controller
         if($request->has('recurring')){
             $inputs["order_type"] = 1;
             $inputs["card_program"] = 'MAXIMUM';
-           // $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
+            $inputs["sale_web_hook_key"] = 'heroku_sale_webhook';
             $inputs["recurring_web_hook_key"] = 'heroku_recurring_webhook';
             $inputs["recurring_payment_number"] = 5;
             $inputs["recurring_payment_cycle"] = 'D';
             $inputs["recurring_payment_interval"] = 1;
         }
+
+        //dd($inputs);
 
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
         echo $paySmart2D;
@@ -311,7 +344,6 @@ class HomeController extends Controller
     // Cancel Url - Fail
     public function fail(Request $request)
     {
-
         Log::debug('PAYMENT_3D_ERROR', [$request->all()]);
 
         return redirect()
@@ -330,6 +362,9 @@ class HomeController extends Controller
             $app_secret = config('payment.sipay.app_secret');
             $app_key = config('payment.sipay.app_key');
             $invoice_id = rand(10000000001, 99999999999).(time() + 1);
+            $total = 5.00;
+            $installment = 1;
+            $currency = 'TRY';
 
             $form = '
                     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
@@ -342,16 +377,31 @@ class HomeController extends Controller
                     </div>
                     <div class="form-group">
                         <label>App Secret</label>
-                        <input class="form-control" name="app_secret" value="'.$app_secret.'" placeholder="Merchant Key" />
+                        <input class="form-control" name="app_secret" value="'.$app_secret.'" placeholder="App Secret" />
                     </div>
                     <div class="form-group">
                         <label>App Key</label>
-                        <input class="form-control" name="app_key" value="'.$app_key.'" placeholder="Merchant Key" />
+                        <input class="form-control" name="app_key" value="'.$app_key.'" placeholder="App Key" />
                     </div>
 
                     <div class="form-group">
                         <label>Invoice ID</label>
-                        <input class="form-control" name="invoice_id" value="'.$invoice_id.'" placeholder="Merchant Key" />
+                        <input class="form-control" name="invoice_id" value="'.$invoice_id.'" placeholder="Invoice ID" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total</label>
+                        <input class="form-control" name="total" value="'.$total.'" placeholder="Total" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Installment</label>
+                        <input class="form-control" name="installment" value="'.$installment.'" placeholder="Installment" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Currency</label>
+                        <input class="form-control" name="currency" value="'.$currency.'" placeholder="Currency" />
                     </div>
 
                     <button class="btn btn-success">Submit</button>
@@ -368,7 +418,11 @@ class HomeController extends Controller
             $app_secret = $request->input('app_secret');
             $app_key = $request->input('app_key');
             $invoice_id = $request->input('invoice_id');
-            $hash = Sipay::generateHashKey(5.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+            $total = $request->input('total');
+            $installment = $request->input('installment');
+            $currency = $request->input('currency');
+
+            $hash = Sipay::generateHashKey($total,$installment,$currency,$merchant_key,$invoice_id,$app_secret);
 
             $getToken = Sipay::getToken($app_key,$app_secret);
 
@@ -396,6 +450,21 @@ class HomeController extends Controller
                     </div>
 
                     <div class="form-group">
+                        <label>Total</label>
+                        <input disabled class="form-control" name="total" value="'.$total.'" placeholder="Total" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Installment</label>
+                        <input disabled class="form-control" name="installment" value="'.$installment.'" placeholder="Installment" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Currency</label>
+                        <input disabled class="form-control" name="currency" value="'.$currency.'" placeholder="Currency" />
+                    </div>
+
+                    <div class="form-group">
                         <label>Hash</label>
                         <textarea disabled class="form-control" name="" id="" cols="30" rows="5">'.$hash.'</textarea>
                     </div>
@@ -404,13 +473,17 @@ class HomeController extends Controller
                         <textarea disabled class="form-control" name="" id="" cols="30" rows="14">'.$getToken->token.'</textarea>
                     </div>
                     <a class="btn btn-primary" href="'.route('hash').'"> << Back</a>
-                    <button class="btn btn-success">Submit</button>
                     </form>
                     </div>
                     ';
             echo $form;
             exit;
         }
+    }
+
+    public function html3D()
+    {
+        return view('home.html3D');
     }
 
     // Get Token
