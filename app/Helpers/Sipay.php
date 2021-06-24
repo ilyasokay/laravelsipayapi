@@ -118,10 +118,14 @@ class Sipay
             'Accept' => 'application/json'
         ];
 
-        $url = config('payment.sipay.api_url') . "/api/paySmart2D";
+        //$url = config('payment.sipay.api_url') . "/api/paySmart2D";
+        $url = "https://laravelsipayapi.test/api/postdata";
 
         $request = Http::withHeaders($headers)
+            ->withoutVerifying()
         ->post($url, $inputs);
+
+        return $request->object();
 
        // dd($request->body());
 
@@ -149,7 +153,7 @@ class Sipay
             'Accept' => 'application/json'
         ])
         ->post(config('payment.sipay.api_url') . "/api/payByCardToken",$inputs);
-
+//dd($request->body());
         return $request->body();
     }
 
@@ -436,6 +440,22 @@ class Sipay
 
         $iv = substr(sha1(mt_rand()), 0, 16);
         $password = sha1($app_secret);
+
+        $salt = substr(sha1(mt_rand()), 0, 4);
+        $saltWithPassword = hash('sha256', $password . $salt);
+
+        $encrypted = openssl_encrypt("$data", 'aes-256-cbc', "$saltWithPassword", null, $iv);
+
+        $msg_encrypted_bundle = "$iv:$salt:$encrypted";
+        $msg_encrypted_bundle = str_replace('/', '__', $msg_encrypted_bundle);
+
+        return $msg_encrypted_bundle;
+    }
+
+    public static function generateHash($data, $pass){
+
+        $iv = substr(sha1(mt_rand()), 0, 16);
+        $password = sha1($pass);
 
         $salt = substr(sha1(mt_rand()), 0, 4);
         $saltWithPassword = hash('sha256', $password . $salt);

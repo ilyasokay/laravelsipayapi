@@ -28,7 +28,7 @@ class ProductFactory extends Factory
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->words(6, true),
             'image_url' => $url,
-            'price' => rand(10, 250)
+            'price' => rand(1, 5)
         ];
     }
 }

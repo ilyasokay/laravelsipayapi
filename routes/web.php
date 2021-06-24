@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\WebHookController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\HealtcheckController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +21,17 @@ use App\Http\Controllers\SettingController;
 |
 */
 
+
   Route::get('/', [HomeController::class, 'index'])->name('index');
   Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+  Route::get('/html3D', [HomeController::class, 'html3D'])->name('setting.html3D');
   Route::post('/setting-update', [SettingController::class, 'update'])->name('setting.update');
 
+  // User
+  Route::resource('user', \App\Http\Controllers\UserController::class);
+
+  // Sub Merchant
+  Route::resource('submerchant', \App\Http\Controllers\SubMerchantController::class);
 
   Route::get('/log-create/{data}', [HomeController::class, 'createLog'])->name('log.create');
   Route::get('/basket', [BasketController::class, 'index'])->name('basket.index');
@@ -54,11 +62,11 @@ use App\Http\Controllers\SettingController;
   Route::get('/paySmart2D', [HomeController::class, 'paySmart2D'])->name('paySmart2D');
   Route::get('/payByCardToken', [HomeController::class, 'payByCardToken'])->name('payByCardToken');
 
-  Route::get('/success', [HomeController::class, 'success'])
+  Route::any('/success', [HomeController::class, 'success'])
       ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
       ->name('success');
 
-  Route::get('/fail', [HomeController::class, 'fail'])
+  Route::any('/fail', [HomeController::class, 'fail'])
       ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
       ->name('fail');
 
@@ -78,6 +86,12 @@ use App\Http\Controllers\SettingController;
   Route::any('/recurring-web-hook', [WebHookController::class, 'recurringWebHook'])
       ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
       ->name('webhook.recurring');
+
+
+    // Api Healtcheck
+    Route::get('healtcheck',[HealtcheckController::class,'index'])->name('healtcheck.index');
+    Route::post('healtcheck/token',[HealtcheckController::class,'token'])->name('healtcheck.token');
+
 
 
 

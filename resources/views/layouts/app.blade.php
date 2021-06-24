@@ -76,6 +76,12 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('user.edit',[Auth::user()->id]) }}">
+                                        {{ __('Profile') }}
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('submerchant.index') }}">
+                                        {{ __('Sub Merchants') }}
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
@@ -88,8 +94,19 @@
                                 </div>
                             </li>
                         @endguest
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('setting.index') }}"><i class="fas fa-cog"></i> Setting</a>
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                               {{ __('Menu') }}
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                 <a class="dropdown-item" href="{{ route('setting.index') }}">
+                                     <i class="fas fa-cog"></i> Setting
+                                 </a>
+                                 <a class="dropdown-item" href="{{ route('healtcheck.index') }}">
+                                     <i class="fas fa-heartbeat"></i> Healtcheck
+                                 </a>
+                            </div>
                         </li>
                     </ul>
                 </div>

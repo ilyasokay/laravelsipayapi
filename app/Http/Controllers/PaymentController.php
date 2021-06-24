@@ -84,7 +84,7 @@ class PaymentController extends Controller
             ];
 
             $saveCard  = Sipay::saveCard($getToken->token, $inputs);
-
+//dd($saveCard);
             if(@$saveCard->status_code != 100){
                 return redirect()
                     ->route('payment.index')
@@ -172,7 +172,38 @@ class PaymentController extends Controller
 
             $inputs['items'] = json_encode($inputs['items'], JSON_UNESCAPED_UNICODE);
             $inputs['return_url'] = route('success');
+            //$inputs['return_url'] = 'https://www.google.com/';
             $inputs['cancel_url'] = route('fail');
+            //$inputs['cancel_url'] = 'https://laravel.com';
+
+/*
+$inputs1 = [
+  "cc_holder_name" => null,
+  "cc_no" => null,
+  "expiry_month" => null,
+  "expiry_year" => null,
+  "cvv" => null,
+  "currency_code" => "TRY",
+  "installments_number" => 1,
+  "invoice_id" => 26220406981,
+  "invoice_description" => "Incoice description 3866",
+  "total" => "65.00",
+  "merchant_key" => "$2y$10$0X.RKmBNjKHg7vfJ8N46j.Zq.AU6vBVASro7AGGkaffB4mrdaV4mO",
+  "name" => "",
+  "surname" => "",
+  "hash_key" => "65912bd6a1c42ce3:d166:qFFuRWQeTfjj6VZ__jH+__U7x5ESzE+7RwCVsWBAjdIZZsVqIqhydHgVEGlwyc2wY0VKHkAVjpozkS6dTmAVUeDhW1DmvOPoBX5IEvC0Y977cueXfXwcjlCkEknRSeSIXA",
+  "items" => json_encode([["name" => "non eos autem","price" => "65.00","quantity" => 1,"description" =>"est expedita tempore porro et cum"]], JSON_UNESCAPED_UNICODE),
+  "card_token" => "3TRLZ2VJUYQV6TW6JZMPYGJZRPH324VI7U6FRBSFP7FTENZ6",
+  "customer_number" => 50,
+  "customer_email" => "phauck@example.com",
+  "customer_phone" => "5724635373",
+  "customer_name" => "Donna Altenwerth",
+  "return_url" => "https://www.google.com/",
+  "cancel_url" => "https://laravel.com",
+];
+*/
+
+            //dd($inputs);
 
             $payByCardToken = Sipay::payByCardToken($inputs);
 

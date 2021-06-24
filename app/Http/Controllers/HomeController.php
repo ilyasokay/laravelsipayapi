@@ -13,6 +13,17 @@ use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
+
+    public function postData(Request $request)
+    {
+        return response()->json([
+           //"headers" => $request->header(),
+           "http_method" => $request->method(),
+           "type" => gettype($request->input("items")),
+           "inputs" => $request->all()
+        ]);
+    }
+
     // Index
     public function index(Request $request)
     {
@@ -151,16 +162,16 @@ class HomeController extends Controller
         $invoice_id = rand(10000000001, 99999999999);
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
-        $hash = Sipay::generateHashKey(44.44,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+        $hash = Sipay::generateHashKey(2.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
 
-        $items = [["name" => "Item3","price" => 44.44,"quantity" => 1,"description" =>"item3 description"]];
+        $items = [["name" => "Item3","price" => 2.00,"quantity" => 1,"description" =>"item3 description"]];
 
         $success_url = route('success');
         $cancel_url = route('fail');
 
        // $success_url = 'https://test.masterpassturkiye.com/RedirectServer/MMIUIMasterPass_V2/s3d/bank/success?RRN=500019510214';
        // $cancel_url = 'https://test.masterpassturkiye.com/RedirectServer/MMIUIMasterPass_V2/s3d/bank/error?RRN=500019510214';
-
+/*
         $inputs = [
             'cc_holder_name' => 'John Dao',
             'cc_no' => 4508034508034509,
@@ -176,6 +187,41 @@ class HomeController extends Controller
             'items' => json_encode($items, JSON_UNESCAPED_UNICODE),
             'name' => 'John',
             'surname' => 'Dao',
+            'hash_key' => $hash,
+            'return_url' => $success_url,
+            'cancel_url' => $cancel_url
+        ];
+*/
+
+
+        $inputs = [
+            /*
+            'cc_holder_name' => 'Aigerim',
+            'cc_no' => 5355765990527226,
+            'expiry_month' => "06",
+            'expiry_year' => "2023",
+                        'cc_holder_name' => 'John Dao',
+            'cc_no' => 4508034508034509,
+            'expiry_month' => 12,
+            'expiry_year' => 2026,
+            'cvv' => '000',
+
+            */
+            //'cvv' => '775',
+            'cc_holder_name' => 'Mustafa Öztürk',
+            'cc_no' => 5549608925835016,
+            'expiry_month' => 12,
+            'expiry_year' => 2021,
+            'cvv' => '076',
+            'currency_code' => 'TRY',
+            'installments_number' => 1,
+            'invoice_id' => $invoice_id,
+            'invoice_description' => 'INVOICE TEST DESCRIPTION',
+            'total' => 2.00,
+            'merchant_key' => $merchant_key,
+            'items' => json_encode($items, JSON_UNESCAPED_UNICODE),
+            'name' => 'Mustafa',
+            'surname' => 'Öztürk',
             'hash_key' => $hash,
             'return_url' => $success_url,
             'cancel_url' => $cancel_url
@@ -197,9 +243,26 @@ class HomeController extends Controller
         $merchant_key = config('payment.sipay.api_merchant_key');
         $app_secret = config('payment.sipay.app_secret');
 
-        $hash = Sipay::generateHashKey(44.44,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+/*
+        $inputs = [
+            'credit_card' => $request->input('credit_cart', 454314),
+            'amount' => $request->input('amount', 44.44),
+            'total' => $request->input('total', 44.44),
+            'currency_code' => $request->input('currency_code', 'TRY'),
+            'merchant_key' => config('payment.sipay.api_merchant_key')
+        ];
 
-        $items = [["name" => "Item3","price" => 44.44,"quantity" => 1,"description" =>"item3 description"]];
+        $inputs['is_2d'] = $token->is_3d == 0 ? 1 : 0;
+
+        $getPos = Sipay::getPos($token->token,$inputs);
+       // dd($getPos[0]->hash_key);
+
+        $hash = $getPos[0]->hash_key;
+*/
+        $hash = Sipay::generateHashKey(2.00,1,'TRY',$merchant_key,$invoice_id,$app_secret);
+
+
+        $items = [["name" => "Item3","price" => 2.00,"quantity" => 1,"description" =>"item3 description"]];
 /*
         $inputs = [
             'cc_holder_name' => 'John Dao',
@@ -223,21 +286,36 @@ class HomeController extends Controller
         $success_url = route('success');
         $cancel_url = route('fail');
 
+        echo $invoice_id;
+
         $inputs = [
-            'cc_holder_name' => 'Aigerim ISBANK',
-            'cc_no' => 4543147422801147,
-            'expiry_month' => "01",
-            'expiry_year' => "2025",
-            'cvv' => '775',
+            /*
+            'cc_holder_name' => 'Aigerim',
+            'cc_no' => 5355765990527226,
+            'expiry_month' => "06",
+            'expiry_year' => "2023",
+
+           // 'cvv' => '775',
+            'cc_holder_name' => 'John Dao',
+            'cc_no' => 4508034508034509,
+            'expiry_month' => 12,
+            'expiry_year' => 2026,
+            'cvv' => '000',
+*/
+            'cc_holder_name' => 'Mustafa Öztürk',
+            'cc_no' => 5549608925835016,
+            'expiry_month' => 12,
+            'expiry_year' => 2021,
+            'cvv' => '076',
             'currency_code' => 'TRY',
             'installments_number' => 1,
             'invoice_id' => $invoice_id,
             'invoice_description' => 'INVOICE TEST DESCRIPTION',
-            'total' => 44.44,
+            'total' => 2.00,
             'merchant_key' => $merchant_key,
             'items' => $items,
-            'name' => 'John',
-            'surname' => 'Dao',
+            'name' => 'Mustafa',
+            'surname' => 'Öztürk',
             'hash_key' => $hash,
             'ip' => '127.0.0.2',
             'return_url' => $success_url,
@@ -259,9 +337,12 @@ class HomeController extends Controller
             $inputs["recurring_payment_interval"] = 1;
         }
 
-        //dd($inputs);
+
 
         $paySmart2D = Sipay::paySmart2D($token->token, $inputs);
+
+        return response()->json($paySmart2D);
+
         echo $paySmart2D;
     }
 
@@ -295,8 +376,10 @@ class HomeController extends Controller
               "hash_key" => $hash,
               "items" => json_encode($items),
               //"card_token" => "UMUFYKCRAS6RGX5OAKU6O6UPJAMPPZVRZZ7LD6GV5Y373ZX2",
-              "card_token" => "3TRLZ2VJUYQV6TW6JZMPYGJZRPH324VI7U6FRBSFP7FTENZ6",
-              "customer_number" => "1621936829-99959",
+              //"card_token" => "F66LU7V26STVL7S3UWFHEQA7526K2RT6YMXWUGOQYMZVFYR2",
+              "card_token" => "272394ae665f2a000f4cae7e0081c424",
+             // "customer_number" => "1621936829-99959",
+              "customer_number" => 797,
               "customer_email" => "phauck@example.com",
               "customer_phone" => "5724635373",
               "customer_name" => "Donna Altenwerth",
@@ -509,9 +592,9 @@ class HomeController extends Controller
                 $form = '
                     <form method="post" action="">
                     <input type="hidden" name="_token" value="'.csrf_token().'" /><br>
-                    <input name="merchant_key" placeholder="Merchant Key" /><br>
-                    <input name="app_secret" placeholder="App Secret" /><br>
-                    <input name="app_key" placeholder="App Key" /><br>
+                    <input name="merchant_key" placeholder="Merchant Key" value="'.config('payment.sipay.api_merchant_key').'" /><br>
+                    <input name="app_secret" placeholder="App Secret" value="'.config('payment.sipay.app_secret').'" /><br>
+                    <input name="app_key" placeholder="App Key" value="'.config('payment.sipay.app_key').'" /><br>
                     <input type="date" name="date" placeholder="2021-05-21" /><br>
                     <button>Submit</button>
                     </form>
@@ -545,4 +628,32 @@ class HomeController extends Controller
 
         return response()->json($transaction->object());
     }
+
+    public function apiSuccess(Request $request)
+    {
+        return response()->json($request->all());
+    }
+
+    public function apiFail(Request $request)
+    {
+        return response()->json($request->all());
+    }
+
+    public function apiHash(Request $request, $password)
+    {
+        $data = "";
+        foreach ($request->all() as $key => $value){
+            $data .= $value ."|";
+        }
+
+        $data = rtrim($data,"|");
+        $hash = Sipay::generateHash($data, $password);
+
+        return response()->json([
+            "status" => "success",
+            "hash_key" => $hash
+        ]);
+    }
+
+
 }

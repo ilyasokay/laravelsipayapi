@@ -42,7 +42,7 @@
                                     <div class="card" style="min-width: 12rem;">
                                         <img src="{{ $product->image_url }}" class="card-img-top" alt="...">
                                         <div class="card-body">
-                                            <h5 class="card-title font-weight-bold">{{ ucfirst($product->price) }}TL</h5>
+                                            <h5 class="card-title font-weight-bold">{{ $product->price }}TL</h5>
                                             <h5 class="card-title">{{ ucfirst($product->name) }}</h5>
                                             <div style="min-height: 50px;">
                                                 <p class="card-text">{{ ucfirst($product->description) }}</p>
