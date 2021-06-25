@@ -63,7 +63,7 @@ class CardController extends Controller
 
         $inputs = [
             'merchant_key' => config('payment.sipay.api_merchant_key'),
-            'customer_number' => 797,
+            'customer_number' => $user->customer_number ?? null,
         ];
         $getCardTokens = Sipay::getCardTokens($token->token, $inputs);
 
